@@ -24,10 +24,10 @@ def rotation_matrix(angle, axis):
         [0, 0, 0, 1]
     ], dtype=np.float32).T
 
-def translation_matrix(translation):
+def translation_matrix(x, y, z):
     return np.array([
-        [1, 0, 0, translation[0]],
-        [0, 1, 0, translation[1]],
-        [0, 0, 1, translation[2]],
+        [1, 0, 0, x],
+        [0, 1, 0, y],
+        [0, 0, 1, z],
         [0, 0, 0, 1]
     ], dtype=np.float32).T
