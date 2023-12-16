@@ -129,6 +129,22 @@ def draw_scene():
     ])  
     logo_prism.draw()
 
+def setup_lighting():
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+
+    light_position = (-5.5, -5.75, 10, 1.0)  # Light position (x, y, z, w)
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
+
+    ambient_color = (253/255, 184/255, 19/255, 1.0)  # Ambient light color
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color)
+
+    # diffuse_color = (1.0, 1.0, 1.0, 1.0)  # Diffuse light color
+    # glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color)
+
+    # specular_color = (1.0, 1.0, 1.0, 1.0)  # Specular light color
+    # glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color)
+
 def main():
     DISPLAY_SIZE = (1280, 720)
     rotation_speed = 1.0
@@ -178,6 +194,7 @@ def main():
         glRotatef(rotation[1], 0, 1, 0)
         glRotatef(rotation[2], 0, 0, 1)
 
+        setup_lighting()
         draw_scene()
         draw_axes(10.0)
 
