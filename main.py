@@ -46,6 +46,34 @@ def label_text(text, x, y, z, color):
     for char in text:
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, ord(char))
 
+def setup_lighting():
+    glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+
+    # light_position = (-5.5, -5.75, 10, 1.0)  # Light position (x, y, z, w)
+    # glLightfv(GL_LIGHT0, GL_POSITION, light_position)
+
+    # ambient_color = (253/255, 184/255, 19/255, 1.0)  # Ambient light color
+    # glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color)
+
+    # diffuse_color = (1.0, 1.0, 1.0, 1.0)  # Diffuse light color
+    # glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color)
+
+    # specular_color = (1.0, 1.0, 1.0, 1.0)  # Specular light color
+    # glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color)
+
+    #glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+    light_position = [-5.5, -5.75, 10, 1.0]
+    ambient_color = [253/255, 184/255, 19/255, 1.0]
+    diffuse_color = [1.0, 1.0, 1.0, 1.0]
+    specular_color = [1.0, 1.0, 1.0, 1.0]
+
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color)
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color)
+    glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color)
+
 def draw_scene():
 
     ground = Ground((.1, .1, .1), 5, 100)
@@ -126,24 +154,9 @@ def draw_scene():
         scale_matrix(0.5, 0.5, 1.5),
         rotation_matrix(-30, (0, 0, 1)),
         translation_matrix(-3.5, -3.75, 1.5)
-    ])  
+    ])
     logo_prism.draw()
 
-def setup_lighting():
-    glEnable(GL_LIGHTING)
-    glEnable(GL_LIGHT0)
-
-    light_position = (-5.5, -5.75, 10, 1.0)  # Light position (x, y, z, w)
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
-
-    ambient_color = (253/255, 184/255, 19/255, 1.0)  # Ambient light color
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color)
-
-    # diffuse_color = (1.0, 1.0, 1.0, 1.0)  # Diffuse light color
-    # glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color)
-
-    # specular_color = (1.0, 1.0, 1.0, 1.0)  # Specular light color
-    # glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color)
 
 def main():
     DISPLAY_SIZE = (1280, 720)

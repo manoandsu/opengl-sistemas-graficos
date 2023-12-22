@@ -74,10 +74,64 @@ class TriangularPrism(DrawingBase):
             ]
 
         self.face_vertices = [self.triangle_vertices[idx] for idx in self.face_idces]
+        # Propriedades de iluminação
+        self.light_position = [-5.5, -5.75, 10, 1.0]
+        self.ambient_color = [253/255, 184/255, 19/255, 1.0]
+        self.diffuse_color = [1.0, 1.0, 1.0, 1.0]
+        self.specular_color = [1.0, 1.0, 1.0, 1.0]
+        self.shininess = 50.0
+
+
+    def calculate_face_normal(self, face_index):
+        v1 = self.face_vertices[face_index]
+        v2 = self.face_vertices[face_index + 1]
+        v3 = self.face_vertices[face_index + 2]
+
+        edge1 = (v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2])
+        edge2 = (v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2])
+
+        normal = (
+            edge1[1] * edge2[2] - edge1[2] * edge2[1],
+            edge1[2] * edge2[0] - edge1[0] * edge2[2],
+            edge1[0] * edge2[1] - edge1[1] * edge2[0]
+        )
+
+        length = (normal[0] ** 2 + normal[1] ** 2 + normal[2] ** 2) ** 0.5
+        return (normal[0] / length, normal[1] / length, normal[2] / length)
+
+    def calculate_quad_normal_avg(self, quad_index):
+        normal_sum = [0.0, 0.0, 0.0]
+        for j in range(4):
+            normal = self.calculate_face_normal((quad_index + j) // 2)
+            normal_sum[0] += normal[0]
+            normal_sum[1] += normal[1]
+            normal_sum[2] += normal[2]
+
+        return (
+            normal_sum[0] / 4,
+            normal_sum[1] / 4,
+            normal_sum[2] / 4
+        )
 
     def draw(self):
         glPushMatrix()
         self._apply_transforms()
+
+        glEnable(GL_NORMALIZE)  # Normaliza as normais automaticamente
+        glEnable(GL_LIGHTING)
+        glEnable(GL_LIGHT0)
+
+        # Configurações de iluminação
+        glLightfv(GL_LIGHT0, GL_POSITION, self.light_position)
+        glLightfv(GL_LIGHT0, GL_AMBIENT, self.ambient_color)
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, self.diffuse_color)
+        glLightfv(GL_LIGHT0, GL_SPECULAR, self.specular_color)
+
+        # Configuração do material
+        glMaterialfv(GL_FRONT, GL_AMBIENT, self.color + (1.0,))
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, self.color + (1.0,))
+        glMaterialfv(GL_FRONT, GL_SPECULAR, self.specular_color)
+        glMaterialf(GL_FRONT, GL_SHININESS, self.shininess)
 
         glBegin(GL_TRIANGLES)
         glColor3f(*self.color)
@@ -86,11 +140,14 @@ class TriangularPrism(DrawingBase):
         glEnd()
 
         glBegin(GL_QUADS)
-
-        for vertex in self.face_vertices:
-            glVertex3f(*vertex)
+        for i in range(0, len(self.face_idces), 4):
+            glColor3f(*self.color)
+            normal_avg = self.calculate_quad_normal_avg(i)
+            glNormal3f(*normal_avg)
+            for j in range(4):
+                glVertex3f(*self.face_vertices[i + j])
         glEnd()
-
+        
         glPopMatrix()
 
 class Ground(DrawingBase):
