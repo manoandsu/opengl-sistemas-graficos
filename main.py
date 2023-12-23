@@ -46,6 +46,12 @@ def label_text(text, x, y, z, color):
     for char in text:
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, ord(char))
 
+def draw_light_source():
+    glPushMatrix()
+    glTranslate(-5.5, -5.75, 10)  # Posição da luz
+    glutSolidSphere(.1, 10, 10)  # Esfera representando a fonte luminosa
+    glPopMatrix()
+
 def setup_lighting():
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
@@ -68,6 +74,8 @@ def setup_lighting():
     ambient_color = [253/255, 184/255, 19/255, 1.0]
     diffuse_color = [1.0, 1.0, 1.0, 1.0]
     specular_color = [1.0, 1.0, 1.0, 1.0]
+
+    draw_light_source()
 
     glLightfv(GL_LIGHT0, GL_POSITION, light_position)
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color)
@@ -140,6 +148,13 @@ def draw_scene():
         translation_matrix(0, 0.12, 0.45)
     ])
     center_prism.draw()
+
+    center_prism_base = PoleBase((0.9, .5, .5))
+    center_prism_base.reg_transforms([
+        scale_matrix(1, 1, .2),
+        translation_matrix(0, .12, .15)
+    ])
+    center_prism_base.draw()
 
     center_prism_base = PoleBase((1.0, .5, .5))
     center_prism_base.reg_transforms([

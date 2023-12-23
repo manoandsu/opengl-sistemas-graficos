@@ -52,7 +52,7 @@ class TriangularPrism(DrawingBase):
     def __init__(self, color=(1.0, 0, 0), isosceles=False):
         super().__init__()
         self.color = color
-        
+        self.isosceles = isosceles
         self.face_idces = [0,1,4,3,0,2,5,3,1,2,5,4]
         if isosceles:
             self.triangle_vertices = [
@@ -74,6 +74,7 @@ class TriangularPrism(DrawingBase):
             ]
 
         self.face_vertices = [self.triangle_vertices[idx] for idx in self.face_idces]
+        #print(self.face_vertices , '--------------------------------------------------')
         # Propriedades de iluminação
         self.light_position = [-5.5, -5.75, 10, 1.0]
         self.ambient_color = [253/255, 184/255, 19/255, 1.0]
@@ -115,8 +116,8 @@ class TriangularPrism(DrawingBase):
 
     def draw(self):
         glPushMatrix()
+        
         self._apply_transforms()
-
         glEnable(GL_NORMALIZE)  # Normaliza as normais automaticamente
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
@@ -128,14 +129,25 @@ class TriangularPrism(DrawingBase):
         glLightfv(GL_LIGHT0, GL_SPECULAR, self.specular_color)
 
         # Configuração do material
-        glMaterialfv(GL_FRONT, GL_AMBIENT, self.color + (1.0,))
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, self.color + (1.0,))
-        glMaterialfv(GL_FRONT, GL_SPECULAR, self.specular_color)
-        glMaterialf(GL_FRONT, GL_SHININESS, self.shininess)
+        # glMaterialfv(GL_FRONT, GL_AMBIENT, self.color + (1.0,))
+        # glMaterialfv(GL_FRONT, GL_DIFFUSE, self.color + (1.0,))
+        # glMaterialfv(GL_FRONT, GL_SPECULAR, self.specular_color)
+        # glMaterialf(GL_FRONT, GL_SHININESS, self.shininess)
 
         glBegin(GL_TRIANGLES)
         glColor3f(*self.color)
         for vertex in self.triangle_vertices:
+            if self.isosceles:
+                if self.triangle_vertices.index(vertex) > 2:
+                    glNormal3f(-1.0, 0.0, 0.0)
+                else:
+                    glNormal3f(1.0, 0.0, 0.0)
+            else:
+                if self.triangle_vertices.index(vertex) > 2:
+                    glNormal3f(0.0, 0.0, 1.0)
+                else:
+                    glNormal3f(0.0, 0.0, -1.0)
+
             glVertex3f(*vertex)
         glEnd()
 
@@ -143,6 +155,7 @@ class TriangularPrism(DrawingBase):
         for i in range(0, len(self.face_idces), 4):
             glColor3f(*self.color)
             normal_avg = self.calculate_quad_normal_avg(i)
+            #print(normal_avg, "---------------------------------")
             glNormal3f(*normal_avg)
             for j in range(4):
                 glVertex3f(*self.face_vertices[i + j])
