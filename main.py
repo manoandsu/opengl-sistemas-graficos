@@ -7,6 +7,10 @@ from pygame.locals import *
 from objects import *
 from matrices import *
 
+LIGHT_POSITION = [-5, -5, 5]
+LIGHT_VALUES = [.15, 1, 1]
+font = None
+
 def draw_axes(length):
     glBegin(GL_LINES)
 
@@ -40,51 +44,45 @@ def draw_axes(length):
     # for i in np.linspace(0, length + 1, 100):
     #     label_text(f'{i:.2f}', -0.05, 0.0, i - 0.01, (1.0, 1.0, 1.0))
 
+
 def label_text(text, x, y, z, color):
     glColor3f(*color)
     glRasterPos3f(x, y, z)
     for char in text:
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, ord(char))
 
+def drawText(x, y, text):                                                
+    textSurface = font.render(text, True, (255, 255, 66, 255), (0, 66, 0, 255))
+    textData = pygame.image.tostring(textSurface, "RGBA", True)
+    glWindowPos2d(x, y)
+    glDrawPixels(textSurface.get_width(), textSurface.get_height(), GL_RGBA, GL_UNSIGNED_BYTE, textData)
+
 def draw_light_source():
     glPushMatrix()
-    glTranslate(-5.5, -5.75, 10)  # Posição da luz
-    glutSolidSphere(.1, 10, 10)  # Esfera representando a fonte luminosa
+    glTranslate(*LIGHT_POSITION)
+    glutSolidSphere(.1, 10, 10)
     glPopMatrix()
 
 def setup_lighting():
+    global LIGHT_VALUES
+    glLightfv(GL_LIGHT0, GL_POSITION, LIGHT_POSITION)
+    k_a, k_d, k_s = LIGHT_VALUES
+    glLightfv(GL_LIGHT0, GL_AMBIENT, (k_a, k_a, k_a, 1))
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, (k_d, k_d, k_d, 1))
+    glLightfv(GL_LIGHT0, GL_SPECULAR, (k_s, k_s, k_s, 1))
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, (.2, .2, .2, 1))
+    
     glEnable(GL_LIGHTING)
     glEnable(GL_LIGHT0)
-
-    # light_position = (-5.5, -5.75, 10, 1.0)  # Light position (x, y, z, w)
-    # glLightfv(GL_LIGHT0, GL_POSITION, light_position)
-
-    # ambient_color = (253/255, 184/255, 19/255, 1.0)  # Ambient light color
-    # glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color)
-
-    # diffuse_color = (1.0, 1.0, 1.0, 1.0)  # Diffuse light color
-    # glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color)
-
-    # specular_color = (1.0, 1.0, 1.0, 1.0)  # Specular light color
-    # glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color)
-
-    #glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-    light_position = [-5.5, -5.75, 10, 1.0]
-    ambient_color = [253/255, 184/255, 19/255, 1.0]
-    diffuse_color = [1.0, 1.0, 1.0, 1.0]
-    specular_color = [1.0, 1.0, 1.0, 1.0]
-
+    glEnable(GL_NORMALIZE)
+    glEnable(GL_COLOR_MATERIAL)
     draw_light_source()
 
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position)
-    glLightfv(GL_LIGHT0, GL_AMBIENT, ambient_color)
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse_color)
-    glLightfv(GL_LIGHT0, GL_SPECULAR, specular_color)
-
 def draw_scene():
-
-    ground = Ground((.1, .1, .1), 5, 100)
+    for i, val in enumerate(LIGHT_VALUES):
+        drawText(140 + i * 100, 120, f'{val:.2f}')
+        
+    ground = Ground((0.1, 0.53, 0), 5, 10)
     ground.reg_transforms([
         translation_matrix(-2, -2, 0)
     ])
@@ -109,14 +107,14 @@ def draw_scene():
     ])
     right_pole.draw()
 
-    left_pole_base = PoleBase((0, 0, 1))
+    left_pole_base = PoleBase((1, 1, 1))
     left_pole_base.reg_transforms([ 
         scale_matrix(1, 0.75, pole_base_height),
         translation_matrix(-pole_offset_x, 0, pole_offset_z)
     ])
     left_pole_base.draw()
 
-    right_pole_base = PoleBase((0, 1, 0))
+    right_pole_base = PoleBase((1, 1, 1))
     right_pole_base.reg_transforms([
         scale_matrix(1, 0.75, pole_base_height),
         # translation_matrix(0, 0, pole_base_height),
@@ -141,7 +139,7 @@ def draw_scene():
     ])
     center_pole_base.draw()
 
-    center_prism = TriangularPrism(isosceles=True)
+    center_prism = TriangularPrism(color=(1, .1, 0), rectangle=True, normal=True)
     center_prism.reg_transforms([
         rotation_matrix(-90, (0, 1, 0)),
         scale_matrix(0.5, 0.25, 0.2),
@@ -149,14 +147,7 @@ def draw_scene():
     ])
     center_prism.draw()
 
-    center_prism_base = PoleBase((0.9, .5, .5))
-    center_prism_base.reg_transforms([
-        scale_matrix(1, 1, .2),
-        translation_matrix(0, .12, .15)
-    ])
-    center_prism_base.draw()
-
-    center_prism_base = PoleBase((1.0, .5, .5))
+    center_prism_base = PoleBase((1, .1, 0))
     center_prism_base.reg_transforms([
         scale_matrix(1, 1, .2),
         translation_matrix(0, .12, .15)
@@ -164,7 +155,7 @@ def draw_scene():
     center_prism_base.draw()
 
     # logo prism
-    logo_prism = TriangularPrism(color=(222/255, 199/255, 162/255),isosceles=False)
+    logo_prism = TriangularPrism(color=(0.68, 0.65, 0.51), rectangle=False, normal=True)
     logo_prism.reg_transforms([
         scale_matrix(0.5, 0.5, 1.5),
         rotation_matrix(-30, (0, 0, 1)),
@@ -174,21 +165,22 @@ def draw_scene():
 
 
 def main():
+    global LIGHT_POSITION, font, LIGHT_VALUES
     DISPLAY_SIZE = (1280, 720)
-    rotation_speed = 1.0
-    zoom_speed = 0.1
+    rotation_speed = 0.2
     camera = [-10, 7, 3.5]
     rotation = [0, 0, 0]
     ortho = False
-
     pygame.init()
     pygame.display.set_mode(DISPLAY_SIZE, DOUBLEBUF | OPENGL)
+    font = pygame.font.SysFont('arial', 32)
 
     glEnable(GL_DEPTH_TEST)
+    glShadeModel(GL_SMOOTH)
     glClearColor(0.0, 0.0, 0.0, 1.0)
     glMatrixMode(GL_MODELVIEW)
     glutInit()
-
+    
     while True:
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
@@ -196,11 +188,35 @@ def main():
             elif ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_p:
                     ortho = not ortho
+                elif ev.key == pygame.K_l:
+                    LIGHT_POSITION = (
+                        LIGHT_POSITION[0] * np.cos(rotation_speed) - LIGHT_POSITION[1] * np.sin(rotation_speed),
+                        LIGHT_POSITION[0] * np.sin(rotation_speed) + LIGHT_POSITION[1] * np.cos(rotation_speed),
+                        LIGHT_POSITION[2] * .95
+                    )
+                elif ev.key == pygame.K_k:
+                    LIGHT_POSITION = (
+                        LIGHT_POSITION[0] * np.cos(-rotation_speed) - LIGHT_POSITION[1] * np.sin(-rotation_speed),
+                        LIGHT_POSITION[0] * np.sin(-rotation_speed) + LIGHT_POSITION[1] * np.cos(-rotation_speed),
+                        LIGHT_POSITION[2] * 1.05
+                    )
+                elif ev.key == pygame.K_q:
+                    LIGHT_VALUES[0] = min(LIGHT_VALUES[0] * 1.1, 1)
+                elif ev.key == pygame.K_a:
+                    LIGHT_VALUES[0] *= 0.9
+                elif ev.key == pygame.K_w:
+                    LIGHT_VALUES[1] = min(LIGHT_VALUES[1] * 1.1, 1)
+                elif ev.key == pygame.K_s:
+                    LIGHT_VALUES[1] *= 0.9
+                elif ev.key == pygame.K_e:
+                    LIGHT_VALUES[2] = min(LIGHT_VALUES[2] * 1.1, 1)
+                elif ev.key == pygame.K_d:
+                    LIGHT_VALUES[2] *= 0.9
             elif ev.type == pygame.MOUSEBUTTONDOWN:
                 if ev.button == 4:  # Scroll Up
-                    camera[2] -= zoom_speed
+                    camera = [coord * 0.9 for coord in camera]
                 elif ev.button == 5:  # Scroll Down
-                    camera[2] += zoom_speed
+                    camera = [coord * 1.1 for coord in camera]
             elif ev.type == pygame.MOUSEMOTION:
                 if ev.buttons[0]:  # Left mouse button pressed
                     rotation[1] -= ev.rel[0] * rotation_speed
@@ -214,7 +230,7 @@ def main():
         if ortho:
             glOrtho(-5, 5, -5, 5, 0.1, 50.0)
         else:
-            gluPerspective(45, (DISPLAY_SIZE[0]/DISPLAY_SIZE[1]), 0.1, 50.0)
+            gluPerspective(45, (DISPLAY_SIZE[0]/DISPLAY_SIZE[1]), 0.1, 100.0)
         glMatrixMode(GL_MODELVIEW)
         
         glPushMatrix()
@@ -224,7 +240,7 @@ def main():
 
         setup_lighting()
         draw_scene()
-        draw_axes(10.0)
+        # draw_axes(100.0)
 
         glPopMatrix()
 
